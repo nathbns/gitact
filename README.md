@@ -1,36 +1,35 @@
-# 🐙 GitHub Activity CLI - Modern Edition
+# GitHub Activity CLI - Modern Edition
 
 A beautiful, modern terminal interface for exploring GitHub profiles, repositories, and activity. Built with [Charm's Bubbles](https://github.com/charmbracelet/bubbles) UI components for a delightful terminal experience.
 
 ![GitHub CLI Screenshot](https://img.shields.io/badge/Built_with-Go-00ADD8?style=for-the-badge&logo=go)
 ![GitHub CLI Screenshot](https://img.shields.io/badge/UI-Bubbles-FF69B4?style=for-the-badge&logo=github)
 
-## ✨ Features
+## Features
 
-### 🎯 Multiple Interactive Views
-- **📋 Repository List** - Browse all public repositories with search functionality
-- **📊 Table View** - Detailed tabular data showing stars, forks, languages, and update dates
-- **📈 Statistics View** - Comprehensive statistics and insights about the user's GitHub profile
-- **⚡ Activity Feed** - Recent GitHub activity timeline with event details
+### Multiple Interactive Views
+- **Repository List** - Browse all public repositories with search functionality
+- **Table View** - Detailed tabular data showing stars, forks, languages, and update dates
+- **Statistics View** - Comprehensive statistics and insights about the user's GitHub profile
+- **Activity Feed** - Recent GitHub activity timeline with event details
 
-### 🔍 Smart Repository Discovery
+### Smart Repository Discovery
 - **Complete Repository Listing** - Shows ALL public repositories (not just recent activity)
 - **Real-time Search** - Filter repositories by name or description
 - **Rich Metadata** - Stars, forks, languages, descriptions, and update dates
 - **Popularity Sorting** - Automatically sorted by star count
 
-### 🚀 Enhanced User Experience
+### Enhanced User Experience
 - **Responsive Design** - Adapts to terminal size
 - **Keyboard Navigation** - Vim-like keybindings (j/k, h/l)
 - **Quick Actions** - Clone, copy URLs, open in browser
 - **Live Data Refresh** - Update data without restarting
 - **Rate Limit Awareness** - Built-in GitHub API rate limit checking
 
-## 📦 Installation
+## Installation
 
 ### Pre-built Binaries
 ```bash
-# Download from releases (coming soon)
 curl -LO https://github.com/yourusername/github-act-cli/releases/latest/download/gitact
 chmod +x gitact
 sudo mv gitact /usr/local/bin/
@@ -44,7 +43,7 @@ go build -o gitact
 ./gitact --help
 ```
 
-## 🔑 GitHub Token Setup (Recommended)
+## GitHub Token Setup (Recommended)
 
 To avoid rate limits and access private repositories:
 

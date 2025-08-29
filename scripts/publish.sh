@@ -14,8 +14,8 @@ NC='\033[0m' # No Color
 
 # Configuration
 BINARY_NAME="gitact"
-GITHUB_REPO="yourusername/gitact"
-HOMEBREW_TAP="yourusername/homebrew-tap"
+GITHUB_REPO="nathbns/gitact"
+HOMEBREW_TAP="nathbns/homebrew-tap"
 
 # Functions
 log_info() {
@@ -23,11 +23,11 @@ log_info() {
 }
 
 log_success() {
-    echo -e "${GREEN}✅ $1${NC}"
+    echo -e "${GREEN} $1${NC}"
 }
 
 log_warning() {
-    echo -e "${YELLOW}⚠️  $1${NC}"
+    echo -e "${YELLOW} $1${NC}"
 }
 
 log_error() {
@@ -64,12 +64,12 @@ check_git_status() {
 }
 
 get_version() {
-    echo "📝 Current version information:"
+    echo "Current version information:"
     if git describe --tags --exact-match 2>/dev/null; then
         log_warning "Current commit is already tagged"
     fi
 
-    echo "🏷️  Recent tags:"
+    echo "Recent tags:"
     git tag --sort=-version:refname | head -5
 
     echo ""
@@ -250,12 +250,12 @@ verify_installation() {
     local version=$1
     log_info "Verifying installation methods..."
 
-    echo "🧪 Testing installation methods:"
+    echo "Testing installation methods:"
     echo "1. Manual download from GitHub releases"
     echo "2. Homebrew installation (will be available shortly)"
 
     echo ""
-    echo "📋 Installation commands:"
+    echo "Installation commands:"
     echo "# Homebrew (macOS/Linux)"
     echo "brew tap ${HOMEBREW_TAP}"
     echo "brew install ${BINARY_NAME}"
@@ -272,15 +272,15 @@ post_release_tasks() {
     local version=$1
     log_info "Running post-release tasks..."
 
-    echo "🎉 Release ${version} published successfully!"
+    echo "Release ${version} published successfully!"
     echo ""
-    echo "📋 Next steps:"
+    echo "Next steps:"
     echo "1. Update documentation if needed"
     echo "2. Announce release on social media"
     echo "3. Update project README with new version"
     echo "4. Monitor for any issues"
     echo ""
-    echo "🔗 Links:"
+    echo "Links:"
     echo "• GitHub Release: https://github.com/${GITHUB_REPO}/releases/tag/${version}"
     echo "• Homebrew Formula: https://github.com/${HOMEBREW_TAP}/blob/main/Formula/${BINARY_NAME}.rb"
 
@@ -288,7 +288,7 @@ post_release_tasks() {
 }
 
 main() {
-    echo "🚀 GitHub Activity CLI - Publication Script"
+    echo "GitHub Activity CLI - Publication Script"
     echo "=========================================="
     echo ""
 
@@ -327,7 +327,7 @@ main() {
     # Cleanup
     post_release_tasks "$version"
 
-    log_success "Publication completed successfully! 🎉"
+    log_success "Publication completed successfully!"
 }
 
 # Run main function if script is executed directly

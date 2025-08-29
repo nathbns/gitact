@@ -118,7 +118,6 @@ func getTopRepos(events []GitHubEvent) []RepoInfo {
 		}
 	}
 
-	// Afficher tous les repositories sans limitation
 	return repos
 }
 
