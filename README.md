@@ -5,6 +5,8 @@ A beautiful, modern terminal interface for exploring GitHub profiles, repositori
 ![GitHub CLI Screenshot](https://img.shields.io/badge/Built_with-Go-00ADD8?style=for-the-badge&logo=go)
 ![GitHub CLI Screenshot](https://img.shields.io/badge/UI-Bubbles-FF69B4?style=for-the-badge&logo=github)
 
+![image](gitactView.png)
+
 ## Features
 
 ### Multiple Interactive Views
