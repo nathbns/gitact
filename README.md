@@ -43,6 +43,11 @@ go build -o gitact
 ./gitact --help
 ```
 
+### Install the cmd
+```bash
+brew install nathbns/tap/gitact
+```
+
 ## GitHub Token Setup (Recommended)
 
 To avoid rate limits and access private repositories:
@@ -68,7 +73,7 @@ To avoid rate limits and access private repositories:
 - **With token**: 5,000 requests/hour
 - **Our app uses**: ~2-4 requests per user
 
-## 🚀 Usage
+## Usage
 
 ### Interactive Dashboard
 ```bash
@@ -118,34 +123,34 @@ gitact --version
 | `enter` | Apply search filter |
 | `esc` | Cancel search |
 
-## 📊 Views Overview
+## Views Overview
 
-### 1. Repository List View 📋
+### 1. Repository List View 
 - **Interactive browsing** of all public repositories
 - **Search functionality** - filter by name or description
 - **Rich information** - stars, forks, descriptions
 - **Quick actions** - clone, copy, open
 
-### 2. Table View 📊
+### 2. Table View 
 - **Tabular format** with sortable columns
 - **Detailed metadata** - language, update dates
 - **Compact overview** of all repositories
 - **Easy comparison** between projects
 
-### 3. Statistics View 📈
+### 3. Statistics View 
 - **Comprehensive analytics** about the GitHub profile
 - **Repository statistics** - total stars, forks, languages used
 - **Top repositories** ranked by popularity
 - **Activity insights** - push events, issues, PRs
 - **Programming language breakdown**
 
-### 4. Activity Feed ⚡
+### 4. Activity Feed 
 - **Recent GitHub activity** timeline
 - **Event details** - pushes, issues, PRs, stars
 - **Repository context** for each activity
 - **Time-based sorting** of events
 
-## 🎯 Examples
+## Examples
 
 ### Exploring Machine Learning Researchers
 ```bash
@@ -180,7 +185,7 @@ gitact sindresorhus
 # Search for specific technologies: "/react" or "/node"
 ```
 
-## 🔧 Configuration
+## Configuration
 
 ### Environment Variables
 - `GITHUB_TOKEN` - GitHub personal access token for higher rate limits
@@ -193,7 +198,7 @@ The application caches API responses to improve performance and reduce rate limi
 - **Duration**: 10 minutes for repository data, 5 minutes for activity
 - **Clear cache**: `rm -rf ~/.cache/gitact/`
 
-## 🤝 Contributing
+## Contributing
 
 We welcome contributions! Here's how to get started:
 
@@ -213,33 +218,23 @@ go mod tidy
 go run . --help
 ```
 
-## 📝 License
+## License
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
-## 🙏 Acknowledgments
+## Acknowledgments
 
 - [Charm](https://charm.sh/) - For the amazing Bubbles UI framework
 - [GitHub API](https://docs.github.com/en/rest) - For providing comprehensive repository data
 - [Lip Gloss](https://github.com/charmbracelet/lipgloss) - For beautiful terminal styling
 - [Bubble Tea](https://github.com/charmbracelet/bubbletea) - For the elegant TUI framework
 
-## 🔮 Roadmap
-
-- [ ] **Caching system** for better performance
-- [ ] **GitHub organization** support
-- [ ] **Repository comparison** features
-- [ ] **Export functionality** (JSON, CSV)
-- [ ] **Custom themes** and color schemes
-- [ ] **Plugin system** for extensions
-- [ ] **Docker support** for easy distribution
-- [ ] **GitHub Actions integration**
 
 ---
 
 <div align="center">
 
-**Made with ❤️ and Go**
+**Made with Go**
 
 [Report Bug](https://github.com/yourusername/github-act-cli/issues) · [Request Feature](https://github.com/yourusername/github-act-cli/issues) · [Documentation](https://github.com/yourusername/github-act-cli/wiki)
 
