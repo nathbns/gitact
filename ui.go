@@ -43,10 +43,9 @@ func (k keyMap) ShortHelp() []key.Binding {
 
 func (k keyMap) FullHelp() [][]key.Binding {
 	return [][]key.Binding{
-		{k.Up, k.Down, k.Left, k.Right},
+		{k.Up, k.Down, k.Left, k.Right, k.Help, k.Quit},
 		{k.Enter, k.Clone, k.Copy, k.Open},
 		{k.Search, k.Refresh, k.Tab},
-		{k.Help, k.Quit},
 	}
 }
 
@@ -70,10 +69,6 @@ var keys = keyMap{
 	Help: key.NewBinding(
 		key.WithKeys("?"),
 		key.WithHelp("?", "toggle help"),
-	),
-	Quit: key.NewBinding(
-		key.WithKeys("q", "esc", "ctrl+c"),
-		key.WithHelp("q", "quit"),
 	),
 	Enter: key.NewBinding(
 		key.WithKeys("enter"),
@@ -122,7 +117,7 @@ type repoItem struct {
 
 func (i repoItem) FilterValue() string { return i.repo.Name }
 func (i repoItem) Title() string {
-	return fmt.Sprintf("%s ⭐ %s", i.repo.Name, formatNumber(i.repo.Stars))
+	return fmt.Sprintf("%s ★ %s", i.repo.Name, formatNumber(i.repo.Stars))
 }
 func (i repoItem) Description() string {
 	desc := i.repo.Description
@@ -132,7 +127,7 @@ func (i repoItem) Description() string {
 	if len(desc) > 80 {
 		desc = desc[:77] + "..."
 	}
-	return fmt.Sprintf("🍴 %s • %s", formatNumber(i.repo.Forks), desc)
+	return fmt.Sprintf("⑂ %s • %s", formatNumber(i.repo.Forks), desc)
 }
 
 // Activity item
@@ -236,16 +231,20 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		m.height = msg.Height
 		m.help.Width = msg.Width
 
-		// Update list dimensions
-		listHeight := msg.Height - 10 // Account for header, footer, help
-		m.list.SetSize(msg.Width-4, listHeight)
+		// Update list dimensions with better centering
+		headerHeight := 4 // Header takes 3-4 lines
+		helpHeight := 3   // Help takes 2-3 lines
+		padding := 4      // Left/right padding
+		availableHeight := msg.Height - headerHeight - helpHeight - 2
+
+		m.list.SetSize(msg.Width-padding, availableHeight)
 
 		// Update table
 		m.updateTableSize()
 
-		// Update viewport
-		m.viewport.Width = msg.Width - 4
-		m.viewport.Height = listHeight
+		// Update viewport with proper sizing
+		m.viewport.Width = msg.Width - padding
+		m.viewport.Height = availableHeight
 
 		return m, nil
 
@@ -318,7 +317,7 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			m.loading = true
 			m.reposLoaded = false
 			m.eventsLoaded = false
-			m.notification = "🔄 Refreshing data..."
+			m.notification = "Refreshing data..."
 			m.notifSuccess = true
 			return m, m.loadData()
 
@@ -429,7 +428,7 @@ func (m *Model) updateRepoList() {
 		items[i] = repoItem{repo: repo}
 	}
 	m.list.SetItems(items)
-	m.list.Title = fmt.Sprintf("📁 Public Repositories (%d)", len(m.publicRepos))
+	m.list.Title = fmt.Sprintf("℗ Public Repositories (%d)", len(m.publicRepos))
 }
 
 func (m *Model) updateActivityList() {
@@ -438,7 +437,7 @@ func (m *Model) updateActivityList() {
 		items[i] = activityItem{event: event}
 	}
 	m.list.SetItems(items)
-	m.list.Title = fmt.Sprintf("⚡ Recent Activity (%d events)", len(m.events))
+	m.list.Title = fmt.Sprintf("𐧾 Recent Activity (%d events)", len(m.events))
 }
 
 func (m *Model) filterRepoList(query string) {
@@ -455,7 +454,7 @@ func (m *Model) filterRepoList(query string) {
 		}
 	}
 	m.list.SetItems(filtered)
-	m.list.Title = fmt.Sprintf("📁 Repositories matching '%s' (%d)", query, len(filtered))
+	m.list.Title = fmt.Sprintf("𐧻 Repositories matching '%s' (%d)", query, len(filtered))
 }
 
 func (m *Model) updateRepoTable() {
@@ -546,14 +545,23 @@ func (m Model) View() string {
 	// Notification bar
 	var notifBar string
 	if m.notification != "" {
+		notifStyle := lipgloss.NewStyle().
+			Width(m.width).
+			Align(lipgloss.Center).
+			Padding(0, 1)
+
 		if m.notifSuccess {
-			notifBar = successNotifStyle.Render(m.notification)
+			notifBar = notifStyle.Background(lipgloss.Color("28")).
+				Foreground(lipgloss.Color("15")).
+				Render(m.notification)
 		} else {
-			notifBar = errorNotifStyle.Render(m.notification)
+			notifBar = notifStyle.Background(lipgloss.Color("124")).
+				Foreground(lipgloss.Color("15")).
+				Render(m.notification)
 		}
 	}
 
-	// Main content based on current view
+	// Main content based on current view with proper centering
 	switch m.currentView {
 	case repoListView:
 		content = m.renderRepoListView()
@@ -564,6 +572,13 @@ func (m Model) View() string {
 	case activityView:
 		content = m.renderActivityView()
 	}
+
+	// Center the main content
+	content = lipgloss.NewStyle().
+		Width(m.width).
+		Align(lipgloss.Center).
+		Padding(0, 2).
+		Render(content)
 
 	// Search bar
 	var searchBar string
@@ -591,26 +606,29 @@ func (m Model) renderLoadingView() string {
 	content := fmt.Sprintf("\n%s Loading GitHub data for %s...\n\n", m.spinner.View(), m.username)
 
 	if m.reposLoaded {
-		content += "✅ Repositories loaded\n"
+		content += "Repositories loaded\n"
 	} else {
-		content += "⏳ Loading repositories...\n"
+		content += "Loading repositories...\n"
 	}
 
 	if m.eventsLoaded {
-		content += "✅ Activity loaded\n"
+		content += "Activity loaded\n"
 	} else {
-		content += "⏳ Loading activity...\n"
+		content += "Loading activity...\n"
 	}
 
 	return lipgloss.NewStyle().
 		Align(lipgloss.Center).
 		Width(m.width).
 		Height(m.height).
+		Border(lipgloss.RoundedBorder()).
+		BorderForeground(lipgloss.Color("62")).
+		Padding(2).
 		Render(content)
 }
 
 func (m Model) renderHeader() string {
-	title := fmt.Sprintf("🐙 GitHub Dashboard - %s", m.username)
+	title := fmt.Sprintf("GitHub Dashboard - %s", m.username)
 
 	var stats string
 	if len(m.publicRepos) > 0 {
@@ -620,27 +638,28 @@ func (m Model) renderHeader() string {
 			totalStars += repo.Stars
 			totalForks += repo.Forks
 		}
-		stats = fmt.Sprintf("📊 %d repos • ⭐ %s stars • 🍴 %s forks",
+		stats = fmt.Sprintf("® %d repos • ⋆ %s stars • ⑂ %s forks",
 			len(m.publicRepos), formatNumber(totalStars), formatNumber(totalForks))
 	}
 
 	var viewIndicator string
 	switch m.currentView {
 	case repoListView:
-		viewIndicator = "📋 List View"
+		viewIndicator = "List View"
 	case repoTableView:
-		viewIndicator = "📊 Table View"
+		viewIndicator = "Table View"
 	case statsView:
-		viewIndicator = "📈 Statistics"
+		viewIndicator = "Statistics"
 	case activityView:
-		viewIndicator = "⚡ Activity"
+		viewIndicator = "Activity"
 	}
 
 	headerStyle := lipgloss.NewStyle().
 		Background(lipgloss.Color("57")).
 		Foreground(lipgloss.Color("230")).
-		Padding(0, 1).
-		Width(m.width)
+		Padding(0, 2).
+		Width(m.width).
+		Align(lipgloss.Center)
 
 	headerContent := fmt.Sprintf("%s\n%s\n%s", title, stats, viewIndicator)
 	return headerStyle.Render(headerContent)
@@ -663,15 +682,23 @@ func (m Model) renderActivityView() string {
 }
 
 func (m Model) renderSearchBar() string {
-	return lipgloss.NewStyle().
+	searchStyle := lipgloss.NewStyle().
+		Width(m.width).
+		Align(lipgloss.Center).
+		Padding(0, 1).
+		Background(lipgloss.Color("235"))
+
+	searchContent := lipgloss.NewStyle().
 		Foreground(lipgloss.Color("241")).
 		Render("Search: ") + m.search.View()
+
+	return searchStyle.Render(searchContent)
 }
 
 func (m Model) renderDetailedStats() string {
 	var content strings.Builder
 
-	content.WriteString(titleStyle.Render("📊 Detailed Statistics"))
+	content.WriteString(titleStyle.Render("Detailed Statistics"))
 	content.WriteString("\n\n")
 
 	// Repository Statistics
@@ -688,7 +715,7 @@ func (m Model) renderDetailedStats() string {
 			}
 		}
 
-		content.WriteString("🗂️ Repository Overview:\n")
+		content.WriteString("® Repository Overview:\n")
 		content.WriteString(fmt.Sprintf("   Total Repositories: %d\n", len(m.publicRepos)))
 		content.WriteString(fmt.Sprintf("   Total Stars: %s\n", formatNumber(totalStars)))
 		content.WriteString(fmt.Sprintf("   Total Forks: %s\n", formatNumber(totalForks)))
@@ -696,18 +723,18 @@ func (m Model) renderDetailedStats() string {
 		content.WriteString("\n")
 
 		// Top repositories
-		content.WriteString("🏆 Top Repositories by Stars:\n")
+		content.WriteString("Top Repositories by Stars:\n")
 		for i, repo := range m.publicRepos {
 			if i >= 5 {
 				break
 			}
-			content.WriteString(fmt.Sprintf("   %d. %s - ⭐ %s\n", i+1, repo.Name, formatNumber(repo.Stars)))
+			content.WriteString(fmt.Sprintf("   %d. %s - ⋆ %s\n", i+1, repo.Name, formatNumber(repo.Stars)))
 		}
 		content.WriteString("\n")
 
 		// Languages
 		if len(languageCount) > 0 {
-			content.WriteString("💻 Programming Languages:\n")
+			content.WriteString("Programming Languages:\n")
 			for lang, count := range languageCount {
 				content.WriteString(fmt.Sprintf("   %s: %d repositories\n", lang, count))
 			}
@@ -717,7 +744,7 @@ func (m Model) renderDetailedStats() string {
 
 	// Activity Statistics
 	if len(m.events) > 0 {
-		content.WriteString("⚡ Activity Statistics:\n")
+		content.WriteString("Activity Statistics:\n")
 		content.WriteString(fmt.Sprintf("   Push Events: %d\n", m.stats.PushEvents))
 		content.WriteString(fmt.Sprintf("   Pull Request Events: %d\n", m.stats.PullRequestEvents))
 		content.WriteString(fmt.Sprintf("   Issue Events: %d\n", m.stats.IssueEvents))
@@ -741,7 +768,7 @@ func (m Model) cloneRepo(repo PublicRepo) tea.Cmd {
 			}
 		}
 		return NotificationMsg{
-			message:   fmt.Sprintf("📋 Clone command copied: %s", repo.Name),
+			message:   fmt.Sprintf("Clone command copied: %s", repo.Name),
 			isSuccess: true,
 		}
 	}
@@ -756,7 +783,7 @@ func (m Model) copyURL(repo PublicRepo) tea.Cmd {
 			}
 		}
 		return NotificationMsg{
-			message:   fmt.Sprintf("📋 URL copied: %s", repo.Name),
+			message:   fmt.Sprintf("URL copied: %s", repo.Name),
 			isSuccess: true,
 		}
 	}
@@ -788,7 +815,7 @@ func (m Model) openInBrowser(repo PublicRepo) tea.Cmd {
 		}
 
 		return NotificationMsg{
-			message:   fmt.Sprintf("🌐 Opened in browser: %s", repo.Name),
+			message:   fmt.Sprintf("Opened in browser: %s", repo.Name),
 			isSuccess: true,
 		}
 	}
@@ -796,20 +823,41 @@ func (m Model) openInBrowser(repo PublicRepo) tea.Cmd {
 
 // Initialize new model with bubbles components
 func NewModel(username string) Model {
-	// List component
-	l := list.New([]list.Item{}, list.NewDefaultDelegate(), 0, 0)
+	// List component with better styling
+	delegate := list.NewDefaultDelegate()
+	delegate.Styles.SelectedTitle = delegate.Styles.SelectedTitle.
+		Background(lipgloss.Color("57")).
+		Foreground(lipgloss.Color("230")).
+		Padding(0, 1)
+	delegate.Styles.SelectedDesc = delegate.Styles.SelectedDesc.
+		Background(lipgloss.Color("57")).
+		Foreground(lipgloss.Color("254")).
+		Padding(0, 1)
+
+	l := list.New([]list.Item{}, delegate, 0, 0)
 	l.SetShowStatusBar(false)
 	l.SetFilteringEnabled(false)
-	l.Title = "Loading..."
+	l.Title = "Loading repositories..."
+	l.Styles.Title = lipgloss.NewStyle().
+		Foreground(lipgloss.Color("86")).
+		Bold(true).
+		Padding(0, 2)
 
 	// Table component
 	t := table.New()
 
 	// Viewport component
 	v := viewport.New(0, 0)
+	v.Style = lipgloss.NewStyle().
+		Border(lipgloss.RoundedBorder()).
+		BorderForeground(lipgloss.Color("62")).
+		Padding(1, 2)
 
 	// Help component
 	h := help.New()
+	h.Styles.ShortKey = lipgloss.NewStyle().Foreground(lipgloss.Color("241"))
+	h.Styles.ShortDesc = lipgloss.NewStyle().Foreground(lipgloss.Color("243"))
+	h.Styles.ShortSeparator = lipgloss.NewStyle().Foreground(lipgloss.Color("237"))
 
 	// Spinner component
 	s := spinner.New()
@@ -818,8 +866,9 @@ func NewModel(username string) Model {
 
 	// Search input
 	ti := textinput.New()
-	ti.Placeholder = "Type to search repositories..."
-	ti.CharLimit = 50
+	ti.Placeholder = "Search repositories by name or description..."
+	ti.CharLimit = 100
+	ti.Width = 50
 
 	return Model{
 		username:     username,

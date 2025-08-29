@@ -48,8 +48,8 @@ func main() {
 
 	// Check rate limit before starting
 	if err := checkRateLimit(); err != nil {
-		fmt.Fprintf(os.Stderr, "⚠️  Rate limit warning: %v\n", err)
-		fmt.Fprintf(os.Stderr, "💡 Set GITHUB_TOKEN environment variable for higher limits\n\n")
+		fmt.Fprintf(os.Stderr, "Rate limit warning: %v\n", err)
+		fmt.Fprintf(os.Stderr, "Set GITHUB_TOKEN environment variable for higher limits\n\n")
 	}
 
 	// init model bubble tea with new modernized UI
@@ -63,7 +63,7 @@ func main() {
 }
 
 func showPublicRepos(username string) {
-	fmt.Printf("🔍 Fetching public repositories for user: %s\n", username)
+	fmt.Printf("Fetching public repositories for user: %s\n", username)
 
 	// Fetch public repositories
 	publicRepos, err := fetchPublicRepos(username)

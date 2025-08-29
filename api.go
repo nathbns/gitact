@@ -125,11 +125,11 @@ func printTopRepo(repos []RepoInfo) {
 	fmt.Printf("\n=== Top Repositories by Activity (%d total) ===\n", len(repos))
 	for i, repo := range repos {
 		fmt.Printf("\n%d. %s\n", i+1, repo.Name)
-		fmt.Printf("   📊 Activity Events: %d\n", repo.Count)
-		fmt.Printf("   🔗 URL: %s\n", repo.URL)
-		fmt.Printf("   📅 Last Activity: %s\n", repo.LastActivity.Format("2006-01-02 15:04:05"))
+		fmt.Printf("   Activity Events: %d\n", repo.Count)
+		fmt.Printf("   URL: %s\n", repo.URL)
+		fmt.Printf("   Last Activity: %s\n", repo.LastActivity.Format("2006-01-02 15:04:05"))
 		if repo.Description != "" {
-			fmt.Printf("   📋 Description: %s\n", repo.Description)
+			fmt.Printf("   Description: %s\n", repo.Description)
 		}
 	}
 }
@@ -256,7 +256,7 @@ func checkRateLimit() error {
 			remaining, limit, resetTime.Format("15:04:05"))
 	}
 
-	fmt.Printf("🔄 GitHub API Rate Limit: %d/%d requests remaining\n", remaining, limit)
+	fmt.Printf("GitHub API Rate Limit: %d/%d requests remaining\n", remaining, limit)
 	return nil
 }
 
@@ -279,15 +279,15 @@ func printPublicRepos(repos []PublicRepo) {
 
 	for i, repo := range repos {
 		fmt.Printf("\n%d. %s\n", i+1, repo.FullName)
-		fmt.Printf("   ⭐ Stars: %d | 🍴 Forks: %d\n", repo.Stars, repo.Forks)
+		fmt.Printf("   Stars: %d | 🍴 Forks: %d\n", repo.Stars, repo.Forks)
 		if repo.Language != "" {
-			fmt.Printf("   📝 Language: %s\n", repo.Language)
+			fmt.Printf("   Language: %s\n", repo.Language)
 		}
 		if repo.Description != "" {
-			fmt.Printf("   📋 Description: %s\n", repo.Description)
+			fmt.Printf("   Description: %s\n", repo.Description)
 		}
-		fmt.Printf("   🔗 URL: %s\n", repo.URL)
-		fmt.Printf("   📅 Created: %s | Updated: %s\n",
+		fmt.Printf("   URL: %s\n", repo.URL)
+		fmt.Printf("   Created: %s | Updated: %s\n",
 			repo.CreatedAt.Format("2006-01-02"),
 			repo.UpdatedAt.Format("2006-01-02"))
 	}
@@ -297,7 +297,7 @@ func printPublicRepos(repos []PublicRepo) {
 	for _, repo := range repos {
 		totalStars += repo.Stars
 	}
-	fmt.Printf("\n📊 Summary: %d repositories with %d total stars\n", len(repos), totalStars)
+	fmt.Printf("\nSummary: %d repositories with %d total stars\n", len(repos), totalStars)
 }
 
 func calculatePublicReposStats(repos []PublicRepo) {
@@ -331,20 +331,20 @@ func calculatePublicReposStats(repos []PublicRepo) {
 	}
 
 	fmt.Printf("\n=== Public Repository Statistics ===\n")
-	fmt.Printf("📊 Total Repositories: %d\n", len(repos))
-	fmt.Printf("⭐ Total Stars: %d\n", totalStars)
-	fmt.Printf("🍴 Total Forks: %d\n", totalForks)
+	fmt.Printf("Total Repositories: %d\n", len(repos))
+	fmt.Printf("Total Stars: %d\n", totalStars)
+	fmt.Printf("Total Forks: %d\n", totalForks)
 
 	if len(repos) > 0 {
-		fmt.Printf("📈 Average Stars per Repository: %.1f\n", float64(totalStars)/float64(len(repos)))
-		fmt.Printf("📈 Average Forks per Repository: %.1f\n", float64(totalForks)/float64(len(repos)))
+		fmt.Printf("Average Stars per Repository: %.1f\n", float64(totalStars)/float64(len(repos)))
+		fmt.Printf("Average Forks per Repository: %.1f\n", float64(totalForks)/float64(len(repos)))
 	}
 
-	fmt.Printf("\n🏆 Most Starred Repository: %s (%d stars)\n", mostStarredRepo.FullName, mostStarredRepo.Stars)
-	fmt.Printf("🏆 Most Forked Repository: %s (%d forks)\n", mostForkedRepo.FullName, mostForkedRepo.Forks)
+	fmt.Printf("\nMost Starred Repository: %s (%d stars)\n", mostStarredRepo.FullName, mostStarredRepo.Stars)
+	fmt.Printf("Most Forked Repository: %s (%d forks)\n", mostForkedRepo.FullName, mostForkedRepo.Forks)
 
 	if len(languageCount) > 0 {
-		fmt.Printf("\n📝 Programming Languages Used:\n")
+		fmt.Printf("\nProgramming Languages Used:\n")
 		for lang, count := range languageCount {
 			fmt.Printf("   - %s: %d repositories\n", lang, count)
 		}
