@@ -113,7 +113,8 @@ gitact --version
 | Key | Action |
 |-----|--------|
 | `enter` | Select item |
-| `c`, `x` | Copy git clone command |
+| `c` | Copy git clone command |
+| `x` | Copy url git command |
 | `o` | Open repository in browser |
 | `r` | Refresh all data |
 
