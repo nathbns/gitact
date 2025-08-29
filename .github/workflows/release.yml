@@ -1,0 +1,216 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - 'v*.*.*'
+  workflow_dispatch:
+
+env:
+  GO_VERSION: '1.21'
+  BINARY_NAME: gitact
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        goos: [linux, windows, darwin]
+        goarch: [amd64, arm64]
+        exclude:
+          - goos: windows
+            goarch: arm64
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Set up Go
+      uses: actions/setup-go@v4
+      with:
+        go-version: ${{ env.GO_VERSION }}
+
+    - name: Get version
+      id: version
+      run: |
+        if [[ $GITHUB_REF == refs/tags/* ]]; then
+          VERSION=${GITHUB_REF#refs/tags/v}
+        else
+          VERSION="dev-$(git rev-parse --short HEAD)"
+        fi
+        echo "VERSION=$VERSION" >> $GITHUB_OUTPUT
+        echo "Building version: $VERSION"
+
+    - name: Build binary
+      env:
+        GOOS: ${{ matrix.goos }}
+        GOARCH: ${{ matrix.goarch }}
+      run: |
+        BINARY_NAME="${{ env.BINARY_NAME }}"
+        if [ "$GOOS" = "windows" ]; then
+          BINARY_NAME="${BINARY_NAME}.exe"
+        fi
+
+        LDFLAGS="-s -w -X main.Version=${{ steps.version.outputs.VERSION }}"
+
+        go build -ldflags "$LDFLAGS" -trimpath -o "$BINARY_NAME" .
+
+        # Create archive
+        ARCHIVE_NAME="${{ env.BINARY_NAME }}-${{ steps.version.outputs.VERSION }}-$GOOS-$GOARCH"
+        if [ "$GOOS" = "windows" ]; then
+          zip "${ARCHIVE_NAME}.zip" "$BINARY_NAME"
+        else
+          tar -czf "${ARCHIVE_NAME}.tar.gz" "$BINARY_NAME"
+        fi
+
+        # Calculate checksums
+        if [ "$GOOS" = "windows" ]; then
+          sha256sum "${ARCHIVE_NAME}.zip" > "${ARCHIVE_NAME}.zip.sha256"
+        else
+          sha256sum "${ARCHIVE_NAME}.tar.gz" > "${ARCHIVE_NAME}.tar.gz.sha256"
+        fi
+
+    - name: Upload artifacts
+      uses: actions/upload-artifact@v3
+      with:
+        name: ${{ env.BINARY_NAME }}-${{ matrix.goos }}-${{ matrix.goarch }}
+        path: |
+          *.tar.gz
+          *.zip
+          *.sha256
+
+  release:
+    needs: build
+    runs-on: ubuntu-latest
+    if: startsWith(github.ref, 'refs/tags/')
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Get version
+      id: version
+      run: |
+        VERSION=${GITHUB_REF#refs/tags/v}
+        echo "VERSION=$VERSION" >> $GITHUB_OUTPUT
+
+    - name: Download all artifacts
+      uses: actions/download-artifact@v3
+      with:
+        path: ./artifacts
+
+    - name: Prepare release files
+      run: |
+        mkdir -p ./release
+        find ./artifacts -name "*.tar.gz" -o -name "*.zip" -o -name "*.sha256" | while read file; do
+          cp "$file" ./release/
+        done
+        ls -la ./release/
+
+    - name: Generate release notes
+      run: |
+        cat > RELEASE_NOTES.md << 'EOF'
+        ## 🚀 What's New in v${{ steps.version.outputs.VERSION }}
+
+        ### ✨ Features
+        - Modern terminal UI with multiple interactive views
+        - Search functionality for repositories
+        - Support for GitHub tokens to avoid rate limits
+        - Cross-platform support (Linux, macOS, Windows)
+
+        ### 📊 Views Available
+        - **Repository List** - Browse all public repos with search
+        - **Table View** - Detailed tabular data
+        - **Statistics** - Comprehensive GitHub profile stats
+        - **Activity Feed** - Recent GitHub activity timeline
+
+        ### 🔧 Installation
+
+        #### Homebrew (macOS/Linux)
+        ```bash
+        brew install gitact
+        ```
+
+        #### Manual Installation
+
+        **Linux x64:**
+        ```bash
+        curl -LO https://github.com/${{ github.repository }}/releases/download/v${{ steps.version.outputs.VERSION }}/gitact-${{ steps.version.outputs.VERSION }}-linux-amd64.tar.gz
+        tar -xzf gitact-${{ steps.version.outputs.VERSION }}-linux-amd64.tar.gz
+        sudo mv gitact /usr/local/bin/
+        ```
+
+        **macOS x64:**
+        ```bash
+        curl -LO https://github.com/${{ github.repository }}/releases/download/v${{ steps.version.outputs.VERSION }}/gitact-${{ steps.version.outputs.VERSION }}-darwin-amd64.tar.gz
+        tar -xzf gitact-${{ steps.version.outputs.VERSION }}-darwin-amd64.tar.gz
+        sudo mv gitact /usr/local/bin/
+        ```
+
+        **macOS ARM (M1/M2):**
+        ```bash
+        curl -LO https://github.com/${{ github.repository }}/releases/download/v${{ steps.version.outputs.VERSION }}/gitact-${{ steps.version.outputs.VERSION }}-darwin-arm64.tar.gz
+        tar -xzf gitact-${{ steps.version.outputs.VERSION }}-darwin-arm64.tar.gz
+        sudo mv gitact /usr/local/bin/
+        ```
+
+        **Windows:**
+        Download `gitact-${{ steps.version.outputs.VERSION }}-windows-amd64.zip` and extract the executable.
+
+        ### 🔑 GitHub Token Setup (Recommended)
+        ```bash
+        export GITHUB_TOKEN=your_token_here
+        gitact karpathy
+        ```
+
+        ### 📖 Usage Examples
+        ```bash
+        # Interactive dashboard
+        gitact karpathy
+
+        # Repository listing
+        gitact --repos torvalds
+
+        # With authentication
+        GITHUB_TOKEN=xxx gitact octocat
+        ```
+
+        **Full Changelog**: https://github.com/${{ github.repository }}/compare/v${{ steps.previous-tag || '0.0.0' }}...v${{ steps.version.outputs.VERSION }}
+        EOF
+
+    - name: Create Release
+      uses: softprops/action-gh-release@v1
+      with:
+        files: ./release/*
+        body_path: RELEASE_NOTES.md
+        draft: false
+        prerelease: false
+        generate_release_notes: true
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  homebrew:
+    needs: release
+    runs-on: ubuntu-latest
+    if: startsWith(github.ref, 'refs/tags/')
+
+    steps:
+    - name: Get version
+      id: version
+      run: |
+        VERSION=${GITHUB_REF#refs/tags/v}
+        echo "VERSION=$VERSION" >> $GITHUB_OUTPUT
+
+    - name: Update Homebrew Formula
+      uses: mislav/bump-homebrew-formula-action@v2
+      with:
+        formula-name: gitact
+        homebrew-tap: ${{ github.repository_owner }}/homebrew-tap
+        base-branch: main
+        download-url: https://github.com/${{ github.repository }}/releases/download/v${{ steps.version.outputs.VERSION }}/gitact-${{ steps.version.outputs.VERSION }}-darwin-amd64.tar.gz
+        commit-message: |
+          gitact ${{ steps.version.outputs.VERSION }}
+
+          Generated by GitHub Actions
+      env:
+        COMMITTER_TOKEN: ${{ secrets.HOMEBREW_TAP_TOKEN }}
